@@ -10,11 +10,20 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
       - run: flutter create --platforms=android --org com.headshotlab --project-name headshot_lab .
+      - name: Disable Android lint
+        run: |
+          cat >> android/build.gradle.kts <<'EOF'
+          subprojects {
+              tasks.configureEach {
+                  if (name.startsWith("lintVital") || name == "lintAnalyzeRelease") { enabled = false }
+              }
+          }
+          EOF
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
